@@ -2,7 +2,7 @@ from sympy.physics.secondquant import (
     Dagger, Bd, VarBosonicBasis, BBra, B, BKet, FixedBosonicBasis,
     matrix_rep, apply_operators, InnerProduct, Commutator, KroneckerDelta,
     AnnihilateBoson, CreateBoson, BosonicOperator,
-    F, Fd, FKet, BosonState, CreateFermion, AnnihilateFermion,
+    F, Fd, FKet, FBra, BosonState, CreateFermion, AnnihilateFermion,
     evaluate_deltas, AntiSymmetricTensor, contraction, NO, wicks,
     PermutationOperator, simplify_index_permutations,
     _sort_anticommuting_fermions, _get_ordered_dummies,
@@ -163,7 +163,7 @@ def test_number_operator():
     assert e == n*BKet([n])
 
 
-def test_inner_product():
+def test_bosonic_inner_product():
     i, j, k, l = symbols('i,j,k,l')
     s1 = BBra([0])
     s2 = BKet([1])
@@ -172,7 +172,24 @@ def test_inner_product():
     s1 = BBra([i, j])
     s2 = BKet([k, l])
     r = InnerProduct(s1, s2)
-    assert r == KroneckerDelta(i, k)*KroneckerDelta(j, l)
+    assert r == (KroneckerDelta(i, k)*KroneckerDelta(j, l) + KroneckerDelta(i, l) * KroneckerDelta(j, k))
+    s1 = BBra([i, i])
+    s2 = BKet([i, i])
+    assert 1 == InnerProduct(s1, s2)
+
+
+def test_fermionic_inner_product():
+    i, j, k, l = symbols('i,j,k,l')
+    s1 = FBra([1])
+    s2 = FKet([2])
+    assert InnerProduct(s1, Dagger(s1)) == 1
+    assert InnerProduct(s1, s2) == 0
+    assert FKet([i, i]) == 0
+    s1 = FBra([i, j])
+    s2 = FKet([k, l])
+    r = InnerProduct(s1, s2)
+    assert r == (KroneckerDelta(i, k)*KroneckerDelta(j, l) - KroneckerDelta(i, l) * KroneckerDelta(j, k))
+    assert False
 
 
 def test_symbolic_matrix_elements():

@@ -1048,6 +1048,7 @@ class FermionState(FockState):
 
     def __new__(cls, occupations, fermi_level=0):
         occupations = list(map(sympify, occupations))
+
         if len(occupations) > 1:
             try:
                 (occupations, sign) = _sort_anticommuting_fermions(
@@ -1447,19 +1448,41 @@ class InnerProduct(Basic):
     is_commutative = True
 
     def __new__(cls, bra, ket):
+        sign = S.One
+
+        # In the case of a sorted FermionState, we can get a sign making the
+        # state into a Mul-object.
+        # This should only apply for fermions as the phase of bosons will
+        # always be positive.
+        if isinstance(bra, Mul):
+            sign *= bra.args[0]
+            bra = bra.args[1]
+        if isinstance(ket, Mul):
+            sign *= ket.args[0]
+            ket = ket.args[1]
         if not isinstance(bra, FockStateBra):
             raise TypeError("must be a bra")
         if not isinstance(ket, FockStateKet):
             raise TypeError("must be a ket")
-        return cls.eval(bra, ket)
+        return sign * cls.eval(bra, ket)
 
     @classmethod
     def eval(cls, bra, ket):
-        result = S.One
-        for i, j in zip(bra.args[0], ket.args[0]):
-            result *= KroneckerDelta(i, j)
-            if result == 0:
-                break
+        result = S.Zero
+
+        if len(bra.args[0]) != len(ket.args[0]):
+            return result
+
+        # Figure out this part.
+        for p in range(len(bra.args[0])):
+            i = bra.args[0][p]
+            term_result = S.One
+            for q in range(len(ket.args[0])):
+                j = ket.args[0][q]
+                term_result *= KroneckerDelta(i, j)
+                if term_result == 0:
+                    break
+            result += term_result
         return result
 
     @property
