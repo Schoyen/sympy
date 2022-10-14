@@ -1480,9 +1480,12 @@ class InnerProduct(Basic):
         if len(bra.args[0]) != len(ket.args[0]):
             return result
 
+        # This needs to be handled using permutations
+        # An example is:
+        # [list(zip(ket, x)) for x in permutations(bra, len(ket))],
+        # where ket and bra are range-objects
         num_args = len(bra.args[0])
-        shift = 0
-        for i in range(num_args):
+        for shift in range(num_args):
             # Handle relative sign of term
             term_result = S.One * (-1) ** shift
             print(term_result)
@@ -1493,7 +1496,6 @@ class InnerProduct(Basic):
                 if term_result == 0:
                     break
             result += term_result
-            shift += 1
 
         return result
 
