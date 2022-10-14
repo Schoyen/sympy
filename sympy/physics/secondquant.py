@@ -1230,6 +1230,12 @@ class FermionState(FockState):
         return len([i for i in list if cls._only_below_fermi(i)])
 
     def _negate_holes(self, list):
+        # i <= self.fermi_level returns a LessThan-relational when i is of
+        # Symbol-type, making the function crash.
+        # This if-test removes the hole-notation for symbols.
+        if any([type(i) is Symbol for i in list]):
+            return tuple([i for i in list])
+
         return tuple([-i if i <= self.fermi_level else i for i in list])
 
     def __repr__(self):
