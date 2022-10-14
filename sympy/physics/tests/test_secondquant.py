@@ -196,8 +196,14 @@ def test_fermionic_inner_product():
     assert abs(r) != abs(KroneckerDelta(i, k)*KroneckerDelta(j, l) + KroneckerDelta(i, l) * KroneckerDelta(j, k))
 
     s1 = FBra([i, j, k])
-    s2 = FKet([p, q, r])
+    s2 = FKet([i, j, k])
     r = InnerProduct(s1, s2)
+    assert abs(r) == abs(1)
+
+    s1 = FBra([i, j, k])
+    s2 = FKet([p, q, s])
+    r = InnerProduct(s1, s2)
+    print(r)
     assert abs(r) == abs(
         KroneckerDelta(i, p) * KroneckerDelta(j, q) * KroneckerDelta(k, r)
         - KroneckerDelta(i, q) * KroneckerDelta(j, p) * KroneckerDelta(k, r)
