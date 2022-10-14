@@ -1473,16 +1473,21 @@ class InnerProduct(Basic):
         if len(bra.args[0]) != len(ket.args[0]):
             return result
 
-        # Figure out this part.
-        for p in range(len(bra.args[0])):
-            i = bra.args[0][p]
-            term_result = S.One
-            for q in range(len(ket.args[0])):
-                j = ket.args[0][q]
-                term_result *= KroneckerDelta(i, j)
+        num_args = len(bra.args[0])
+        shift = 0
+        for i in range(num_args):
+            # Handle relative sign of term
+            term_result = S.One * (-1) ** shift
+            print(term_result)
+            for s in range(num_args):
+                p = bra.args[0][s]
+                q = ket.args[0][(s + shift) % num_args]
+                term_result *= KroneckerDelta(p, q)
                 if term_result == 0:
                     break
             result += term_result
+            shift += 1
+
         return result
 
     @property

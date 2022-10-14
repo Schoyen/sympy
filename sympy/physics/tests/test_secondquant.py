@@ -179,7 +179,7 @@ def test_bosonic_inner_product():
 
 
 def test_fermionic_inner_product():
-    i, j, k, l = symbols('i,j,k,l')
+    i, j, k, l, p, q, r, s = symbols('i,j,k,l, p, q, r, s')
     s1 = FBra([1])
     s2 = FKet([2])
     assert InnerProduct(s1, Dagger(s1)) == 1
@@ -188,8 +188,24 @@ def test_fermionic_inner_product():
     s1 = FBra([i, j])
     s2 = FKet([k, l])
     r = InnerProduct(s1, s2)
-    assert r == (KroneckerDelta(i, k)*KroneckerDelta(j, l) - KroneckerDelta(i, l) * KroneckerDelta(j, k))
-    assert False
+    # Test using the absolute value to avoid the overall potential global phase.
+    assert abs(r) == abs(KroneckerDelta(i, k)*KroneckerDelta(j, l) - KroneckerDelta(i, l) * KroneckerDelta(j, k))
+    assert abs(r) == abs(-KroneckerDelta(i, k)*KroneckerDelta(j, l) + KroneckerDelta(i, l) * KroneckerDelta(j, k))
+    # Test that the abs does not apply to relative phases
+    assert abs(r) != abs(-KroneckerDelta(i, k)*KroneckerDelta(j, l) - KroneckerDelta(i, l) * KroneckerDelta(j, k))
+    assert abs(r) != abs(KroneckerDelta(i, k)*KroneckerDelta(j, l) + KroneckerDelta(i, l) * KroneckerDelta(j, k))
+
+    s1 = FBra([i, j, k])
+    s2 = FKet([p, q, r])
+    r = InnerProduct(s1, s2)
+    assert abs(r) == abs(
+        KroneckerDelta(i, p) * KroneckerDelta(j, q) * KroneckerDelta(k, r)
+        - KroneckerDelta(i, q) * KroneckerDelta(j, p) * KroneckerDelta(k, r)
+        - KroneckerDelta(i, r) * KroneckerDelta(j, q) * KroneckerDelta(k, p)
+        - KroneckerDelta(i, p) * KroneckerDelta(j, r) * KroneckerDelta(k, q)
+        + KroneckerDelta(i, q) * KroneckerDelta(j, r) * KroneckerDelta(k, p)
+        + KroneckerDelta(i, r) * KroneckerDelta(j, p) * KroneckerDelta(k, q)
+    )
 
 
 def test_symbolic_matrix_elements():
