@@ -1066,7 +1066,8 @@ class FermionState(FockState):
         if sign % 2:
             return S.NegativeOne*FockState.__new__(cls, occupations)
         else:
-            return FockState.__new__(cls, occupations)
+            # Keep sign expliclity to ensure same types
+            return Mul(S.One, FockState.__new__(cls, occupations), evaluate=False)
 
     def up(self, i):
         """
